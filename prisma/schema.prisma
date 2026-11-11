@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameRu      String
+  type        String
+  rarity      String
+  description String?
+  image       String?
+  stats       String?
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  weapon      Weapon?
+}
+
+model Weapon {
+  id          Int      @id @default(autoincrement())
+  itemId      Int      @unique
+  item        Item     @relation(fields: [itemId], references: [id])
+  damage      Int
+  accuracy    Int
+  range       Int
+  fireRate    Int
+  recoil      Int
+  modules     WeaponModule[]
+}
+
+model WeaponModule {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameRu      String
+  type        String
+  damageMod   Int      @default(0)
+  accuracyMod Int      @default(0)
+  recoilMod   Int      @default(0)
+  weapons     Weapon[]
+}
+
+model AuctionItem {
+  id              Int      @id @default(autoincrement())
+  name            String
+  nameRu          String
+  type            String
+  rarity          String
+  currentPrice    Int
+  avgPrice        Int
+  buyoutPrice     Int
+  profitMargin    Int
+  seller          String?
+  quantity        Int
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  priceHistory    PriceHistory[]
+  
+  @@index([type])
+  @@index([rarity])
+  @@index([expiresAt])
+}
+
+model PriceHistory {
+  id          Int      @id @default(autoincrement())
+  itemId      Int
+  price       Int
+  timestamp   DateTime @default(now())
+  
+  item        AuctionItem @relation(fields: [itemId], references: [id])
+  
+  @@index([itemId])
+  @@index([timestamp])
+}
+
+model EmissionTimer {
+  id            Int      @id @default(autoincrement())
+  region        String   @default("RU")
+  previousStart DateTime?
+  previousEnd   DateTime?
+  nextPredicted DateTime?
+  isActive      Boolean  @default(true)
+  lastUpdated   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
